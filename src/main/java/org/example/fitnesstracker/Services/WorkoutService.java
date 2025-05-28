@@ -2,12 +2,10 @@ package org.example.fitnesstracker.Services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.fitnesstracker.DTO.WorkoutDTO;
+import org.example.fitnesstracker.Models.User;
+import org.example.fitnesstracker.Models.Workout;
 import org.example.fitnesstracker.Repositories.UserRepository;
 import org.example.fitnesstracker.Repositories.WorkoutRepository;
-
-import org.example.fitnesstracker.Models.Workout;
-import org.example.fitnesstracker.Models.User;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -20,10 +18,10 @@ public class WorkoutService {
 
     private final WorkoutRepository workoutRepository;
     private final UserRepository userRepository;
+    private final GoalService goalService;
 
     public List<Workout> getAllWorkoutsForCurrentUser(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = getUserByEmail(email);
         return workoutRepository.findByUserId(user.getId());
     }
 
@@ -37,15 +35,18 @@ public class WorkoutService {
     }
 
     public Workout createWorkout(WorkoutDTO request, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = getUserByEmail(email);
+
         Workout workout = new Workout();
         workout.setType(request.getType());
         workout.setDuration(request.getDuration());
         workout.setCalories(request.getCalories());
         workout.setDate(request.getDate());
         workout.setUser(user);
-        return workoutRepository.save(workout);
+
+        Workout savedWorkout = workoutRepository.save(workout);
+        goalService.updateGoalsBasedOnWorkout(savedWorkout);
+        return savedWorkout;
     }
 
     public Workout updateWorkout(Long id, WorkoutDTO request, String email) {
@@ -62,8 +63,8 @@ public class WorkoutService {
         workoutRepository.delete(workout);
     }
 
-
-
-
-
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 }

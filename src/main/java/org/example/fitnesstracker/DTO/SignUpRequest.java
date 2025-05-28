@@ -12,7 +12,6 @@ public class SignUpRequest {
     @NotBlank(message = "Username cannot be empty")
     private String username;
 
-
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "The email must be in the format user@example.com")
     private String email;
