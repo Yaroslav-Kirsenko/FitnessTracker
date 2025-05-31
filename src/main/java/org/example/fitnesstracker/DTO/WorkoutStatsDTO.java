@@ -11,5 +11,11 @@ public class WorkoutStatsDTO {
     private long count;
     private Long totalDuration;
     private Long totalCalories;
+
+    public WorkoutStatsDTO(String type, Long totalCalories, Long totalDuration) {
+        this.type = type;
+        this.totalCalories = totalCalories;
+        this.totalDuration = totalDuration;
+    }
 }
 
